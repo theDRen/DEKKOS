@@ -450,7 +450,7 @@ alias dots='cd ~/sync/Lua_Projects/dots/'
 
 setopt AUTO_CD
 setopt prompt_subst
-PROMPT=$'\n%F{69}%~ %F{129}%B» %b%f '
+PROMPT=$'\n%F{69}%~ %F{129}%B》%b%f '
 # cd ~/.house/.gameroom/Love
 export PATH=$PATH:$HOME/go/bin
 
