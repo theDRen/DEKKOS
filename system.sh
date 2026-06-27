@@ -102,18 +102,24 @@ end
 -- NOTE: this Hyprland runs the Lua config, so the legacy
 -- `hyprctl dispatch exec ghostty` is gone. `hyprctl dispatch <X>` now evaluates
 -- `hl.dispatch(<X>)`, so we feed it the hl.dsp.* dispatcher tables directly.
-function launcher.select()
+
+-- bring the chosen app to the fore: hop to its workspace FIRST, then summon it
+-- if absent. Placement is driven here rather than trusted to window-rule class
+-- matching, so every app lands on its own workspace AND we switch to it.
+function launcher.launch()
 	local choice = launcher.entries[launcher.selected]
 	local ws = choice.workspace or choice.order
-	if choice.class and launcher.isRunning(choice.class) then
-		-- already alive — carry thee to its workspace (no clone)
-		os.execute("hyprctl dispatch 'hl.dsp.focus({ workspace = " .. ws .. " })'")
-	else
-		-- summon it through Hyprland; window rules place it on its workspace
+	os.execute("hyprctl dispatch 'hl.dsp.focus({ workspace = " .. ws .. " })'")
+	if not (choice.class and launcher.isRunning(choice.class)) then
 		os.execute("hyprctl dispatch 'hl.dsp.exec_cmd(\"" .. choice.run .. "\")'")
 	end
-	-- dismiss the overlay so thou land within
+end
+
+-- chosen from the overlay: dismiss the menu FIRST (else the app opens onto the
+-- special workspace that is currently active), then land on the app.
+function launcher.select()
 	os.execute("hyprctl dispatch 'hl.dsp.workspace.toggle_special(\"menu\")'")
+	launcher.launch()
 end
 
 return launcher
@@ -190,11 +196,12 @@ function love.load()
 
 	status.load()
 
-	-- auto-launch the default program once at boot
+	-- auto-launch the default program once at boot. use launch() not select():
+	-- the menu starts hidden at boot, so we must not toggle the special workspace.
 	for i, entry in ipairs(launcher.entries) do
 		if entry.default == 1 then
 			launcher.selected = i
-			launcher.select()
+			launcher.launch()
 			break
 		end
 	end
