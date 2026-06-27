@@ -566,7 +566,7 @@ local menu        = "hyprlauncher"
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 
 hl.on("hyprland.start", function ()
-	hl.exec_cmd(terminal)
+--	hl.exec_cmd(terminal)
 --	hl.exec_cmd("nm-applet")
 --	hl.exec_cmd("waybar & hyprpaper & firefox")
 	hl.exec_cmd("love ~/.scripts/lovedeck")
@@ -867,7 +867,9 @@ hl.window_rule({ name = "ws-discord", match = { class = "vesktop" },         wor
 hl.window_rule({ name = "ws-monitor", match = { class = "btop" },            workspace = "7", fullscreen = true })
 
 -- lovedeck menu: a slide-in sidebar overlay on its own special chamber
-hl.window_rule({ name = "lovedeck", match = { class = "love" }, workspace = "special:menu", float = true, move = "0 0" })
+-- no_initial_focus: open hidden on special:menu (don't steal focus / show the
+-- workspace at boot). Still focusable when summoned via togglespecialworkspace.
+hl.window_rule({ name = "lovedeck", match = { class = "love" }, workspace = "special:menu", float = true, move = "0 0", no_initial_focus = true })
 -- }}}
 EOF
     }
@@ -1174,6 +1176,12 @@ EOF
 version: 1
 kind: DeviceProfile
 name: lovedeck
+# the composite device must expose a keyboard target, else the remapped KeyF13
+# has no sink and is silently dropped. keep gamepad so games still get the pad.
+target_devices:
+  - gamepad
+  - keyboard
+  - mouse
 mapping:
   - name: Guide to F13
     source_event:
