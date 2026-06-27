@@ -444,20 +444,79 @@ alias svmin='pactl set-sink-volume @DEFAULT_SINK@ 10%'
 alias anime='ani-cli --skip'
 alias dlmp3='yt-dlp -x --audio-format mp3 --no-playlist'
 alias dlvid='yt-dlp --no-playlist'
-alias conf.help="$HOME/.scripts/config_sh/configuration.sh --help"
-alias conf.dots="$HOME/.scripts/config_sh/configuration.sh --dots"
-alias conf.dmon="$HOME/.scripts/config_sh/configuration.sh --dm-on"
-alias conf.dmoff="$HOME/.scripts/config_sh/configuration.sh --dm-off"
-alias conf.full="$HOME/.scripts/config_sh/configuration.sh"
-alias conf.edit="/usr/bin/nvim $HOME/.scripts/config_sh/configuration.sh"
 alias mov="$HOME/.scripts/movies.sh"
 alias weather='curl wttr.in?&u'
 alias dots='cd ~/sync/Lua_Projects/dots/'
 
 setopt AUTO_CD
 setopt prompt_subst
-PROMPT=$'\n%F{69}%~ %F{129}%B≫ %b%f '
+PROMPT=$'\n%F{69}%~ %F{129}%B» %b%f '
 # cd ~/.house/.gameroom/Love
+export PATH=$PATH:$HOME/go/bin
+
+export PATH="$HOME/.local/bin:$PATH"
+EOF
+    }
+    # }}}
+    # .BASH_PROFILE {{{
+    _write_bash_profile_() {
+    echo ''
+    echo 'Overwriting .bash_profile'
+    sleep 0.1
+    cat > "$HOME/.bash_profile" <<'EOF'
+if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
+   start-hyprland
+elif [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty2" ]; then
+   niri --session
+fi
+[[ -f ~/.bashrc ]] && . ~/.bashrc
+EOF
+    }
+    # }}}
+    # .BASHRC {{{
+    _write_bashrc_() {
+    echo ''
+    echo 'Overwriting .bashrc'
+    sleep 0.1
+    cat > "$HOME/.bashrc" <<'EOF'
+alias chat='tgpt'
+alias surfshark='surfshark-client'
+alias minecraft='prismlauncher'
+alias '..'='cd ..'
+alias '...'='cd ~'
+alias update='sudo pacman -Syyu'
+alias ls='eza -a --icons'
+alias lsv='ls -1 --color=auto'
+alias lst='eza --tree'
+alias lsn='eza --icons'
+alias search='pacman -Ss'
+alias install='sudo pacman -S'
+alias aurinstall='paru -S'
+alias remove='sudo pacman -Rns'
+alias aurremove='paru -Rns'
+alias aursearch='paru -Ss'
+alias reboot='sudo systemctl reboot'
+alias sleep='sudo systemctl suspend'
+alias off='poweroff'
+alias logitech='solaar'
+alias sbmin='brightnessctl set 1%'
+alias sbmid='brightnessctl set 44%'
+alias sbmax='brightnessctl set 64%'
+alias sb='brightnessctl set'
+alias sv='pactl set-sink-volume @DEFAULT_SINK@'
+alias svmax='pactl set-sink-volume @DEFAULT_SINK@ 117%'
+alias svmidhi='pactl set-sink-volume @DEFAULT_SINK@ 64%'
+alias svmid='pactl set-sink-volume @DEFAULT_SINK@ 44%'
+alias svmin='pactl set-sink-volume @DEFAULT_SINK@ 10%'
+alias anime='ani-cli --skip'
+alias dlmp3='yt-dlp -x --audio-format mp3 --no-playlist'
+alias dlvid='yt-dlp --no-playlist'
+alias mov="$HOME/.scripts/movies.sh"
+alias weather='curl wttr.in?&u'
+alias dots='cd ~/sync/Lua_Projects/dots/'
+
+shopt -s autocd
+PS1='\n\[\e[1;38;5;69m\]><(( \[\e[0;38;5;129m\]\w\[\e[1;38;5;69m\] ))°>\[\e[0m\] '
 export PATH=$PATH:$HOME/go/bin
 
 export PATH="$HOME/.local/bin:$PATH"
@@ -1033,6 +1092,7 @@ EOF
   _make_dirs_() {
     mkdir -p "$HOME/.scripts/config_sh"
     mkdir -p "$HOME/.scripts/lovedeck"
+    mkdir -p "$HOME/.config/hypr"
     mkdir -p "$HOME/.config/ghostty"
     mkdir -p "$HOME/.config/nvim"
     mkdir -p "$HOME/.config/waybar"
@@ -1153,7 +1213,7 @@ EOF
       if pacman -Q "$pacPackage" &>/dev/null; then
         echo -e "\e[38;5;46m$pacPackage installed successfully.\e[0m"
         echo -e "\e[38;5;202m$pacPackage\e[0m \e[38;5;46m==> INSTALLED\e[0m \e[35m$(date '+%F %T')\e[0m" >> ~/packageLog.txt
-        echo "$pacPackage" > ~/.cache/installed-pacpaks.txt
+        echo "$pacPackage" >> ~/.cache/installed-pacpaks.txt
         sleep 0.05
       else
         echo -e "\e[31m$pacPackage install failed.\e[0m"
@@ -1172,7 +1232,7 @@ EOF
       installedPackageLog=($(cat ~/.cache/installed-pacpaks.txt))
 
       for installed in "${installedPackageLog[@]}"; do
-        if [[ ! " ${pacpaks[@]} " =~ " $installed " ]]; then
+        if [[ ! " ${pacPaks[@]} " =~ " $installed " ]]; then
 	        echo " $installed (no longer declared - consider uninstalling)"
         fi
       done
@@ -1195,7 +1255,7 @@ EOF
         if pacman -Q "$yayPackage" &>/dev/null; then
           echo -e "\e[38;5;46m$yayPackage installed successfully.\e[0m"
           echo -e "\e[38;5;202m$yayPackage\e[0m \e[38;5;46m==> INSTALLED\e[0m \e[35m$(date '+%F %T')\e[0m" >> ~/packageLog.txt
-	      echo "$yayPackage" > ~/.cache/installed-yaypaks.txt
+	      echo "$yayPackage" >> ~/.cache/installed-yaypaks.txt
           sleep 0.05
         else
           echo -e "\e[31m$yayPackage install failed.\e[0m"
@@ -1242,26 +1302,19 @@ EOF
   # }}}
   # SET SHELL {{{
   _set_shell_() {
-      echo 'Enter a number to set the default shell.'
-	  chsh -s /bin/zsh
+      echo 'Setting default shell to zsh'
+      sudo chsh -s /bin/zsh "$USER"
       zsh
   }
   # }}}
-  # MOVE SCRIPT {{{
-  _move_script_() {
-      scrPath="$(readlink -f "$0")"
-      scrName="$(basename "$scrPath")"
-      targDir="$HOME/.scripts/config_sh"
-      targPath="$targDir/$scrName"
-
-      if [ "$scrPath" != "$targPath" ]; then
-        mv "$scrPath" "$targDir/$scrName"
-        echo -e "The script has been moved from $scrPath\n to $targDir/$scrName"
-        sleep 1.5
-      else
-        echo 'The script is already in the target directory.'
-        sleep 0.1
-      fi
+  # INSTALL SH {{{
+  _install_sh_() {
+      dest="$HOME/.scripts/config_sh/system.sh"
+      echo 'Installing system.sh to ~/.scripts/config_sh/'
+      curl -sL https://raw.githubusercontent.com/theDRen/DEKKOS/main/system.sh -o "$dest"
+      chmod +x "$dest"
+      echo "system.sh installed to $dest"
+      sleep 0.1
   }
   # }}}
 # }}}
@@ -1291,6 +1344,8 @@ EOF
       _make_dirs_
       _write_zprofile_
       _write_ARCH_zshrc_
+      _write_bash_profile_
+      _write_bashrc_
       _write_pacman_
       _write_hyprland_
       _write_inputplumber_
@@ -1319,13 +1374,15 @@ EOF
       echo 'Wallpaper downloaded. You may need to logout for the wallpaper to reply.'
       sleep 0.1
       _make_dirs_
-      _move_script_
+      _install_sh_
       _process_pacman_packages_
       _clone_gits_
       _process_yay_packages_
       _enable_autologin_
       _write_zprofile_
       _write_ARCH_zshrc_
+      _write_bash_profile_
+      _write_bashrc_
       _write_pacman_
       _write_hyprland_
       _enable_inputplumber_
