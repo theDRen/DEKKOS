@@ -66,12 +66,11 @@ function launcher.load()
 	end)
 end
 
--- switch the chamber beneath the menu overlay to the highlighted app's workspace,
--- then return focus to the menu (class:love) so scrolling keeps answering
+-- live workspace peek is parked: under the Lua config, switching the workspace
+-- beneath the overlay steals focus from the menu (class:love) and kills
+-- controller nav, and there is no confirmed focus-by-class dispatcher yet.
+-- Re-enable once we can refocus the menu after the switch.
 function launcher.preview()
-	local choice = launcher.entries[launcher.selected]
-	local ws = choice.workspace or choice.order
-	os.execute("hyprctl --batch 'dispatch workspace " .. ws .. " ; dispatch focuswindow class:love'")
 end
 
 function launcher.down()
@@ -88,7 +87,8 @@ function launcher.up()
 	end
 end
 
--- ask Hyprland whether a window of this class already liveth
+-- ask Hyprland whether a window of this class already liveth (a query, not a
+-- dispatch, so the classic CLI still answers it)
 function launcher.isRunning(class)
 	local handle = io.popen("hyprctl clients -j")
 	if not handle then
@@ -99,15 +99,21 @@ function launcher.isRunning(class)
 	return out:find('"class": "' .. class .. '"', 1, true) ~= nil
 end
 
+-- NOTE: this Hyprland runs the Lua config, so the legacy
+-- `hyprctl dispatch exec ghostty` is gone. `hyprctl dispatch <X>` now evaluates
+-- `hl.dispatch(<X>)`, so we feed it the hl.dsp.* dispatcher tables directly.
 function launcher.select()
 	local choice = launcher.entries[launcher.selected]
+	local ws = choice.workspace or choice.order
 	if choice.class and launcher.isRunning(choice.class) then
-		-- already alive — carry thee to it (no clone), then dismiss the overlay
-		os.execute("hyprctl --batch 'dispatch focuswindow class:" .. choice.class .. " ; dispatch togglespecialworkspace menu'")
+		-- already alive — carry thee to its workspace (no clone)
+		os.execute("hyprctl dispatch 'hl.dsp.focus({ workspace = " .. ws .. " })'")
 	else
-		-- summon it, then dismiss the overlay so thou land within
-		os.execute("hyprctl --batch 'dispatch exec " .. choice.run .. " ; dispatch togglespecialworkspace menu'")
+		-- summon it through Hyprland; window rules place it on its workspace
+		os.execute("hyprctl dispatch 'hl.dsp.exec_cmd(\"" .. choice.run .. "\")'")
 	end
+	-- dismiss the overlay so thou land within
+	os.execute("hyprctl dispatch 'hl.dsp.workspace.toggle_special(\"menu\")'")
 end
 
 return launcher
@@ -545,7 +551,7 @@ hl.monitor({
 -- PROGRAM VARIABLES {{{
 -- Set programs that you use
 
-local terminal    = "kitty"
+local terminal    = "ghostty"
 local fileManager = "dolphin"
 local menu        = "hyprlauncher"
 -- }}}
@@ -741,7 +747,7 @@ hl.device({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + SHIFT + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
