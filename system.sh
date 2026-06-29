@@ -196,15 +196,10 @@ function love.load()
 
 	status.load()
 
-	-- auto-launch the default program once at boot. use launch() not select():
-	-- the menu starts hidden at boot, so we must not toggle the special workspace.
-	for i, entry in ipairs(launcher.entries) do
-		if entry.default == 1 then
-			launcher.selected = i
-			launcher.launch()
-			break
-		end
-	end
+	-- Boot app (Steam) is launched directly by the Hyprland autostart, NOT here:
+	-- launching it from the menu made the menu the first window to map, which
+	-- showed the special:menu overlay on top of Steam. The menu now just opens
+	-- hidden and waits to be summoned.
 end
 
 function love.draw()
@@ -348,6 +343,16 @@ EOF
     steam                   # Game Launcher
     obs-studio              # Screen Recording & Streaming
 	inputplumber
+
+  # GRAPHICS (AMD RDNA - archinstall would add these via a desktop profile)
+    mesa                    # OpenGL/EGL (64-bit)
+    lib32-mesa              # OpenGL/EGL (32-bit, for Proton/Wine)
+    vulkan-radeon           # AMD Vulkan driver (64-bit)
+    lib32-vulkan-radeon     # AMD Vulkan driver (32-bit, REQUIRED for Proton games)
+    vulkan-icd-loader       # Vulkan loader (64-bit)
+    lib32-vulkan-icd-loader # Vulkan loader (32-bit)
+    vulkan-mesa-layers      # Vulkan validation/utility layers (64-bit)
+    lib32-vulkan-mesa-layers
 
   # HYPRLAND
     hyprland
@@ -569,6 +574,11 @@ hl.on("hyprland.start", function ()
 --	hl.exec_cmd(terminal)
 --	hl.exec_cmd("nm-applet")
 --	hl.exec_cmd("waybar & hyprpaper & firefox")
+	-- Steam FIRST: it claims ws1 (a normal workspace) as the foreground before the
+	-- menu maps. The menu is launched second so its special:menu workspace stays
+	-- hidden -- the first window of a session that lands on a special workspace
+	-- makes that overlay visible, which is why the menu used to sit on top of Steam.
+	hl.exec_cmd("steam -gamepadui")
 	hl.exec_cmd("love ~/.scripts/lovedeck")
 	hl.exec_cmd("~/.scripts/load-inputplumber-profile.sh")
 end)
