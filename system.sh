@@ -579,8 +579,8 @@ hl.on("hyprland.start", function ()
 	-- hidden -- the first window of a session that lands on a special workspace
 	-- makes that overlay visible, which is why the menu used to sit on top of Steam.
 	hl.exec_cmd("steam -gamepadui")
-	hl.exec_cmd("love ~/.scripts/lovedeck")
-	hl.exec_cmd("~/.scripts/load-inputplumber-profile.sh")
+--	hl.exec_cmd("love ~/.scripts/lovedeck")
+--	hl.exec_cmd("~/.scripts/load-inputplumber-profile.sh")
 end)
 -- }}}
 -- ENVIRONMENT VARIABLES {{{
@@ -606,10 +606,10 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
 hl.config({
     general = {
-        gaps_in  = 5,
-        gaps_out = 20,
+        gaps_in  = 0,
+        gaps_out = 0,
 
-        border_size = 2,
+        border_size = 0,
 
         col = {
             active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
@@ -626,22 +626,22 @@ hl.config({
     },
 
     decoration = {
-        rounding       = 10,
-        rounding_power = 2,
+        rounding       = 0,
+        rounding_power = 0,
 
         -- Change transparency of focused and unfocused windows
         active_opacity   = 1.0,
         inactive_opacity = 1.0,
 
         shadow = {
-            enabled      = true,
+            enabled      = false,
             range        = 4,
             render_power = 3,
             color        = 0xee1a1a1a,
         },
 
         blur = {
-            enabled   = true,
+            enabled   = false,
             size      = 3,
             passes    = 1,
             vibrancy  = 0.1696,
@@ -723,7 +723,7 @@ hl.config({
 -- MISC {{{
 hl.config({
     misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
+        force_default_wallpaper = 1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
         disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
     },
 })
@@ -879,7 +879,7 @@ hl.window_rule({ name = "ws-monitor", match = { class = "btop" },            wor
 -- lovedeck menu: a slide-in sidebar overlay on its own special chamber
 -- no_initial_focus: open hidden on special:menu (don't steal focus / show the
 -- workspace at boot). Still focusable when summoned via togglespecialworkspace.
-hl.window_rule({ name = "lovedeck", match = { class = "love" }, workspace = "special:menu", float = true, move = "0 0", no_initial_focus = true })
+hl.window_rule({ name = "lovedeck", match = { class = "love" }, workspace = "special:menu", float = true, move = "0 0" })
 -- }}}
 EOF
     }
